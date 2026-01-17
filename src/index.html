@@ -19,6 +19,7 @@
       align-items: center;
       background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
       overflow: hidden;
+      position: relative;
     }
 
     /* ================================
@@ -86,6 +87,35 @@
       .input-group input { padding: 10px 12px; font-size:14px; }
       .btn { padding:10px; font-size:14px; }
     }
+
+    /* ================================
+       CONTRASEÑA SEGURA - FEEDBACK VISUAL
+       ================================ */
+    .password-feedback { font-size:12px; color:#ff5252; margin-top:4px; display:none; }
+    .password-feedback.valid { color:#00ffaa; display:block; }
+    .password-feedback.invalid { display:block; }
+
+    /* ================================
+       SPINNER DE CARGA
+       ================================ */
+    #spinner {
+      position: fixed;
+      inset:0;
+      display:none;
+      justify-content:center;
+      align-items:center;
+      background: rgba(0,0,0,0.4);
+      z-index: 99999;
+    }
+    .spinner-inner {
+      border: 6px solid #f3f3f3;
+      border-top: 6px solid #6c5ce7;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
@@ -126,7 +156,7 @@
         <input type="password" id="regContrasena" required>
         <span onclick="togglePassword('regContrasena')" aria-label="Mostrar/ocultar contraseña" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;color:#fff;">👁️</span>
       </div>
-      <small id="regContrasenaWarning" style="color:#ff5252;display:none;">La contraseña debe tener al menos 6 caracteres</small>
+      <div id="regPassFeedback" class="password-feedback invalid">Debe tener 6+ caracteres, 1 mayúscula, 1 minúscula y 1 número</div>
     </div>
     <div class="input-group">
       <label for="regConfirmar">Confirmar contraseña</label>
@@ -148,7 +178,7 @@
         <input type="password" id="recNueva" required>
         <span onclick="togglePassword('recNueva')" aria-label="Mostrar/ocultar contraseña" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;color:#fff;">👁️</span>
       </div>
-      <small id="recNuevaWarning" style="color:#ff5252;display:none;">La contraseña debe tener al menos 6 caracteres</small>
+      <div id="recPassFeedback" class="password-feedback invalid">Debe tener 6+ caracteres, 1 mayúscula, 1 minúscula y 1 número</div>
     </div>
     <div class="input-group">
       <label>Confirmar contraseña</label>
@@ -162,6 +192,9 @@
   </form>
 </div>
 
+<!-- SPINNER -->
+<div id="spinner"><div class="spinner-inner"></div></div>
+
 <div id="demoModal" class="modal-overlay">
   <div class="modal">
     <h2>⚠️ Aviso importante</h2>
@@ -171,14 +204,17 @@
 </div>
 
 <script>
+  // 🔹 SPINNER CONTROL
+  const spinner = document.getElementById("spinner");
+  function mostrarSpinner(){ spinner.style.display='flex'; }
+  function ocultarSpinner(){ spinner.style.display='none'; }
+
   // 🔹 REDIRECCIÓN SI YA HAY USUARIO
   if(localStorage.getItem("usuarioActual") && window.location.pathname.endsWith("index.html")){
     window.location.href = "home.html";
   }
 
   const alertBox = document.getElementById("alert");
-
-  // 🔹 ALERTA CON FADE Y DESAPARICIÓN AUTOMÁTICA
   function mostrarAlerta(msg, ok=false){
     alertBox.textContent = msg;
     alertBox.classList.toggle("success", ok);
@@ -190,7 +226,6 @@
     },4000);
   }
 
-  // 🔹 FUNCION UNIFICADA PARA MOSTRAR FORMULARIOS Y LIMPIAR INPUTS
   function mostrarFormulario(formId, titleText){
     ['loginForm','registerForm','recoverForm'].forEach(f=>{
       const form = document.getElementById(f);
@@ -201,31 +236,58 @@
     alertBox.style.display='none';
   }
 
-  // 🔹 TOGGLE DE CONTRASEÑA
   function togglePassword(id){
     const input=document.getElementById(id);
     input.type = input.type==='password'?'text':'password';
   }
 
-  // 🔹 VALIDACIÓN DE LONGITUD DE CONTRASEÑA
-  const regContrasena=document.getElementById("regContrasena");
-  const recNueva=document.getElementById("recNueva");
-  const regContrasenaWarning=document.getElementById("regContrasenaWarning");
-  const recNuevaWarning=document.getElementById("recNuevaWarning");
+  // 🔹 VALIDACIÓN CONTRASEÑA SEGURA
+  const regContrasena = document.getElementById("regContrasena");
+  const recNueva = document.getElementById("recNueva");
+  const regPassFeedback = document.getElementById("regPassFeedback");
+  const recPassFeedback = document.getElementById("recPassFeedback");
 
-  regContrasena.addEventListener("input",()=> regContrasenaWarning.style.display=(regContrasena.value.trim().length<6?'block':'none'));
-  recNueva.addEventListener("input",()=> recNuevaWarning.style.display=(recNueva.value.trim().length<6?'block':'none'));
+  function validarPasswordSegura(pw){
+    return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/.test(pw.trim());
+  }
 
-  // 🔹 VALIDACIÓN DE EMAIL SIMPLE
+  regContrasena.addEventListener("input", ()=>{
+    if(validarPasswordSegura(regContrasena.value)){
+      regPassFeedback.textContent = "Contraseña segura ✅";
+      regPassFeedback.classList.add("valid");
+      regPassFeedback.classList.remove("invalid");
+    } else {
+      regPassFeedback.textContent = "Debe tener 6+ caracteres, 1 mayúscula, 1 minúscula y 1 número";
+      regPassFeedback.classList.add("invalid");
+      regPassFeedback.classList.remove("valid");
+    }
+  });
+
+  recNueva.addEventListener("input", ()=>{
+    if(validarPasswordSegura(recNueva.value)){
+      recPassFeedback.textContent = "Contraseña segura ✅";
+      recPassFeedback.classList.add("valid");
+      recPassFeedback.classList.remove("invalid");
+    } else {
+      recPassFeedback.textContent = "Debe tener 6+ caracteres, 1 mayúscula, 1 minúscula y 1 número";
+      recPassFeedback.classList.add("invalid");
+      recPassFeedback.classList.remove("valid");
+    }
+  });
+
+  // 🔹 VALIDACIÓN EMAIL SIMPLE
   function validarEmail(email){ return /\S+@\S+\.\S+/.test(email.trim()); }
 
-  // 🔹 FUNCIONES GENERALES DE FETCH
+  // 🔹 FUNCIONES GENERALES DE FETCH CON SPINNER
   async function enviarFormulario(url, body){
+    mostrarSpinner();
     try{
       const response=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
       const data=await response.json();
+      ocultarSpinner();
       return {ok:response.ok,data};
     }catch(err){
+      ocultarSpinner();
       return {ok:false,data:{message:"Error al conectar con el servidor"}};
     }
   }
@@ -235,6 +297,7 @@
     e.preventDefault();
     const correo=document.getElementById("regCorreo").value.trim();
     if(!validarEmail(correo)){ mostrarAlerta("❌ Correo inválido"); return; }
+    if(!validarPasswordSegura(regContrasena.value)){ mostrarAlerta("❌ Contraseña insegura"); return; }
     if(regContrasena.value.trim()!==document.getElementById("regConfirmar").value.trim()){ mostrarAlerta("❌ Las contraseñas no coinciden"); return; }
     const {ok,data}=await enviarFormulario("http://localhost:3000/register",{
       nombre:document.getElementById("regNombre").value.trim(),
@@ -267,10 +330,12 @@
   // 🔹 RECUPERAR CONTRASEÑA
   document.getElementById("recoverForm").addEventListener("submit",async e=>{
     e.preventDefault();
-    if(!validarEmail(document.getElementById("recCorreo").value)){ mostrarAlerta("❌ Correo inválido"); return; }
+    const correo=document.getElementById("recCorreo").value.trim();
+    if(!validarEmail(correo)){ mostrarAlerta("❌ Correo inválido"); return; }
+    if(!validarPasswordSegura(recNueva.value)){ mostrarAlerta("❌ Contraseña insegura"); return; }
     if(recNueva.value.trim()!==document.getElementById("recConfirmar").value.trim()){ mostrarAlerta("❌ Las contraseñas no coinciden"); return; }
     const {ok,data}=await enviarFormulario("http://localhost:3000/recover",{
-      correo:document.getElementById("recCorreo").value.trim(),
+      correo,
       nuevaPassword:recNueva.value.trim()
     });
     if(!ok){ mostrarAlerta("❌ "+data.message); return; }
