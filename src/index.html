@@ -1,10 +1,291 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>$Title$</title>
+  <title>Obsidian | Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
+
+  <style>
+    /* ================================
+       RESET Y TIPOGRAFÍA
+       ================================ */
+    * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; }
+
+    body {
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      overflow: hidden;
+    }
+
+    /* ================================
+       FIGURAS DECORATIVAS
+       ================================ */
+    .circle { position: absolute; border-radius: 50%; filter: blur(45px); opacity: 0.6; z-index: 1; }
+    .circle.one { width: 320px; height: 320px; background: #6c5ce7; top: -90px; left: -90px; }
+    .circle.two { width: 260px; height: 260px; background: #00cec9; bottom: -80px; right: -80px; }
+
+    /* ================================
+       CONTENEDOR PRINCIPAL
+       ================================ */
+    .container {
+      position: relative;
+      z-index: 10;
+      width: 380px;
+      padding: 35px;
+      background: rgba(255,255,255,0.12);
+      backdrop-filter: blur(15px);
+      border-radius:16px;
+      box-shadow:0 25px 50px rgba(0,0,0,0.45);
+      color:#fff;
+    }
+
+    /* ================================
+       TÍTULOS
+       ================================ */
+    h2 { text-align:center; font-family:'Permanent Marker',cursive; font-size:36px; letter-spacing:1px; margin-bottom:20px; color:#ffcc00; text-shadow:2px 2px 5px rgba(0,0,0,0.5); }
+
+    /* ================================
+       FORMULARIOS E INPUTS
+       ================================ */
+    .input-group { margin-bottom:14px; }
+    .input-group label { display:block; margin-bottom:5px; font-size:13px; opacity:0.85; }
+    .input-group input { width:100%; padding:11px 15px; border-radius:8px; border:none; outline:none; background:rgba(255,255,255,0.25); color:#fff; }
+
+    /* ================================
+       BOTONES Y ENLACES
+       ================================ */
+    .btn { width:100%; padding:12px; border:none; border-radius:8px; font-size:15px; color:#fff; cursor:pointer; background:linear-gradient(135deg,#6c5ce7,#00cec9); }
+    .btn:hover { opacity:0.9; }
+    .link { text-align:center; margin-top:12px; font-size:13px; color:#00cec9; cursor:pointer; }
+
+    /* ================================
+       ALERTAS
+       ================================ */
+    .alert { margin-bottom:15px; padding:10px; border-left:4px solid #ff5252; border-radius:6px; font-size:13px; display:none; background:rgba(255,82,82,0.25); transition:opacity 0.3s ease; }
+    .alert.success { background:rgba(0,255,170,0.25); border-left-color:#00ffaa; }
+
+    /* ================================
+       MODAL DEMO
+       ================================ */
+    .modal-overlay { position: fixed; inset:0; display:flex; justify-content:center; align-items:center; background:rgba(0,0,0,0.7); z-index:9999; }
+    .modal { background:#1e1e2e; color:#fff; padding:25px; border-radius:12px; max-width:380px; text-align:center; box-shadow:0 0 20px rgba(0,0,0,0.6); }
+    .modal h2 { margin-bottom:10px; color:#ffcc00; }
+    .modal p { font-size:14px; line-height:1.5; }
+    .modal button { margin-top:15px; padding:10px 20px; background:linear-gradient(90deg,#6a5cff,#00c6ff); border:none; border-radius:8px; color:#fff; cursor:pointer; font-weight:bold; }
+
+    /* ================================
+       RESPONSIVE
+       ================================ */
+    @media (max-width: 420px){
+      .container { width: 90%; padding: 25px; }
+      h2 { font-size: 28px; }
+      .input-group input { padding: 10px 12px; font-size:14px; }
+      .btn { padding:10px; font-size:14px; }
+    }
+  </style>
 </head>
 <body>
-$END$
+
+<div class="circle one"></div>
+<div class="circle two"></div>
+
+<div class="container">
+  <h2 id="title">OBSIDIAN</h2>
+  <div id="alert" class="alert"></div>
+
+  <!-- LOGIN -->
+  <form id="loginForm">
+    <div class="input-group">
+      <label for="loginCorreo">Correo electrónico</label>
+      <input type="email" id="loginCorreo" placeholder="ejemplo@correo.com" required>
+    </div>
+    <div class="input-group">
+      <label for="loginContrasena">Contraseña</label>
+      <div style="position:relative;">
+        <input type="password" id="loginContrasena" placeholder="••••••••" required>
+        <span onclick="togglePassword('loginContrasena')" aria-label="Mostrar/ocultar contraseña" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;color:#fff;">👁️</span>
+      </div>
+    </div>
+    <button class="btn">Ingresar</button>
+    <div class="link" onclick="mostrarFormulario('registerForm','REGISTRO')">¿No tienes cuenta? Regístrate</div>
+    <div class="link" onclick="mostrarFormulario('recoverForm','RECUPERAR CONTRASEÑA')">¿Olvidaste tu contraseña?</div>
+  </form>
+
+  <!-- REGISTRO -->
+  <form id="registerForm" style="display:none;">
+    <div class="input-group"><label for="regNombre">Nombre o empresa</label><input type="text" id="regNombre" required></div>
+    <div class="input-group"><label for="regTelefono">Teléfono</label><input type="tel" id="regTelefono" required></div>
+    <div class="input-group"><label for="regCorreo">Correo electrónico</label><input type="email" id="regCorreo" required></div>
+    <div class="input-group">
+      <label for="regContrasena">Contraseña</label>
+      <div style="position:relative;">
+        <input type="password" id="regContrasena" required>
+        <span onclick="togglePassword('regContrasena')" aria-label="Mostrar/ocultar contraseña" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;color:#fff;">👁️</span>
+      </div>
+      <small id="regContrasenaWarning" style="color:#ff5252;display:none;">La contraseña debe tener al menos 6 caracteres</small>
+    </div>
+    <div class="input-group">
+      <label for="regConfirmar">Confirmar contraseña</label>
+      <div style="position:relative;">
+        <input type="password" id="regConfirmar" required>
+        <span onclick="togglePassword('regConfirmar')" aria-label="Mostrar/ocultar contraseña" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;color:#fff;">👁️</span>
+      </div>
+    </div>
+    <button class="btn">Registrarme</button>
+    <div class="link" onclick="mostrarFormulario('loginForm','OBSIDIAN')">¿Ya tienes cuenta? Inicia sesión</div>
+  </form>
+
+  <!-- RECUPERAR -->
+  <form id="recoverForm" style="display:none;">
+    <div class="input-group"><label>Correo electrónico</label><input type="email" id="recCorreo" required></div>
+    <div class="input-group">
+      <label>Nueva contraseña</label>
+      <div style="position:relative;">
+        <input type="password" id="recNueva" required>
+        <span onclick="togglePassword('recNueva')" aria-label="Mostrar/ocultar contraseña" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;color:#fff;">👁️</span>
+      </div>
+      <small id="recNuevaWarning" style="color:#ff5252;display:none;">La contraseña debe tener al menos 6 caracteres</small>
+    </div>
+    <div class="input-group">
+      <label>Confirmar contraseña</label>
+      <div style="position:relative;">
+        <input type="password" id="recConfirmar" required>
+        <span onclick="togglePassword('recConfirmar')" aria-label="Mostrar/ocultar contraseña" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;color:#fff;">👁️</span>
+      </div>
+    </div>
+    <button class="btn">Actualizar contraseña</button>
+    <div class="link" onclick="mostrarFormulario('loginForm','OBSIDIAN')">Volver al login</div>
+  </form>
+</div>
+
+<div id="demoModal" class="modal-overlay">
+  <div class="modal">
+    <h2>⚠️ Aviso importante</h2>
+    <p>Esta es una <strong>aplicación web DEMO</strong>.<br>No ingreses correos ni contraseñas reales.<br><br>La información se almacena únicamente con fines de prueba.</p>
+    <button id="acceptDemo">Entendido</button>
+  </div>
+</div>
+
+<script>
+  // 🔹 REDIRECCIÓN SI YA HAY USUARIO
+  if(localStorage.getItem("usuarioActual") && window.location.pathname.endsWith("index.html")){
+    window.location.href = "home.html";
+  }
+
+  const alertBox = document.getElementById("alert");
+
+  // 🔹 ALERTA CON FADE Y DESAPARICIÓN AUTOMÁTICA
+  function mostrarAlerta(msg, ok=false){
+    alertBox.textContent = msg;
+    alertBox.classList.toggle("success", ok);
+    alertBox.style.opacity = '1';
+    alertBox.style.display="block";
+    setTimeout(()=>{
+      alertBox.style.opacity='0';
+      setTimeout(()=> alertBox.style.display='none',300);
+    },4000);
+  }
+
+  // 🔹 FUNCION UNIFICADA PARA MOSTRAR FORMULARIOS Y LIMPIAR INPUTS
+  function mostrarFormulario(formId, titleText){
+    ['loginForm','registerForm','recoverForm'].forEach(f=>{
+      const form = document.getElementById(f);
+      form.style.display=(f===formId?'block':'none');
+      Array.from(form.querySelectorAll('input')).forEach(input=>input.value='');
+    });
+    document.getElementById("title").textContent = titleText;
+    alertBox.style.display='none';
+  }
+
+  // 🔹 TOGGLE DE CONTRASEÑA
+  function togglePassword(id){
+    const input=document.getElementById(id);
+    input.type = input.type==='password'?'text':'password';
+  }
+
+  // 🔹 VALIDACIÓN DE LONGITUD DE CONTRASEÑA
+  const regContrasena=document.getElementById("regContrasena");
+  const recNueva=document.getElementById("recNueva");
+  const regContrasenaWarning=document.getElementById("regContrasenaWarning");
+  const recNuevaWarning=document.getElementById("recNuevaWarning");
+
+  regContrasena.addEventListener("input",()=> regContrasenaWarning.style.display=(regContrasena.value.trim().length<6?'block':'none'));
+  recNueva.addEventListener("input",()=> recNuevaWarning.style.display=(recNueva.value.trim().length<6?'block':'none'));
+
+  // 🔹 VALIDACIÓN DE EMAIL SIMPLE
+  function validarEmail(email){ return /\S+@\S+\.\S+/.test(email.trim()); }
+
+  // 🔹 FUNCIONES GENERALES DE FETCH
+  async function enviarFormulario(url, body){
+    try{
+      const response=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+      const data=await response.json();
+      return {ok:response.ok,data};
+    }catch(err){
+      return {ok:false,data:{message:"Error al conectar con el servidor"}};
+    }
+  }
+
+  // 🔹 REGISTRO
+  document.getElementById("registerForm").addEventListener("submit",async e=>{
+    e.preventDefault();
+    const correo=document.getElementById("regCorreo").value.trim();
+    if(!validarEmail(correo)){ mostrarAlerta("❌ Correo inválido"); return; }
+    if(regContrasena.value.trim()!==document.getElementById("regConfirmar").value.trim()){ mostrarAlerta("❌ Las contraseñas no coinciden"); return; }
+    const {ok,data}=await enviarFormulario("http://localhost:3000/register",{
+      nombre:document.getElementById("regNombre").value.trim(),
+      correo,
+      password:regContrasena.value.trim(),
+      telefono:document.getElementById("regTelefono").value.trim()
+    });
+    if(!ok){ mostrarAlerta("❌ "+data.message); return; }
+    mostrarAlerta("✅ "+data.message,true);
+    e.target.reset();
+    setTimeout(()=> mostrarFormulario('loginForm','OBSIDIAN'),1500);
+  });
+
+  // 🔹 LOGIN
+  document.getElementById("loginForm").addEventListener("submit",async e=>{
+    e.preventDefault();
+    const correo=document.getElementById("loginCorreo").value.trim();
+    if(!validarEmail(correo)){ mostrarAlerta("❌ Correo inválido"); return; }
+    const {ok,data}=await enviarFormulario("http://localhost:3000/login",{
+      correo,
+      password:document.getElementById("loginContrasena").value.trim()
+    });
+    if(!ok){ mostrarAlerta("❌ "+data.message); return; }
+    localStorage.setItem("token",data.token);
+    localStorage.setItem("usuarioActual",JSON.stringify(data.usuario));
+    mostrarAlerta("🎉 Login exitoso",true);
+    setTimeout(()=> window.location.href="home.html",1000);
+  });
+
+  // 🔹 RECUPERAR CONTRASEÑA
+  document.getElementById("recoverForm").addEventListener("submit",async e=>{
+    e.preventDefault();
+    if(!validarEmail(document.getElementById("recCorreo").value)){ mostrarAlerta("❌ Correo inválido"); return; }
+    if(recNueva.value.trim()!==document.getElementById("recConfirmar").value.trim()){ mostrarAlerta("❌ Las contraseñas no coinciden"); return; }
+    const {ok,data}=await enviarFormulario("http://localhost:3000/recover",{
+      correo:document.getElementById("recCorreo").value.trim(),
+      nuevaPassword:recNueva.value.trim()
+    });
+    if(!ok){ mostrarAlerta("❌ "+data.message); return; }
+    mostrarAlerta("✅ "+data.message,true);
+    e.target.reset();
+    setTimeout(()=> mostrarFormulario('loginForm','OBSIDIAN'),1500);
+  });
+
+  // 🔹 MODAL DEMO
+  const demoModal=document.getElementById("demoModal");
+  const acceptDemo=document.getElementById("acceptDemo");
+  if(!sessionStorage.getItem("demoAccepted")) demoModal.style.display="flex";
+  else demoModal.style.display="none";
+  acceptDemo.addEventListener("click",()=>{ sessionStorage.setItem("demoAccepted","true"); demoModal.style.display="none"; });
+
+</script>
 </body>
 </html>
